@@ -30,6 +30,7 @@ CREATE TABLE [dbo].[PatientMaster](
 	[Requestor] [nvarchar](255) NULL,
 	[Age] [nvarchar](20) NULL,
 	[PDate] [datetime] NULL,
+	,ReferredDoctorId int
 PRIMARY KEY CLUSTERED 
 (
 	[ID] ASC
@@ -70,5 +71,6 @@ Id AS MainPatID
 ,Requestor
 ,Age
 ,Date as PDate
+,tpi.ReferredDoctorId
 FROM pat.tbl_PatientInfo tpi
 left join tbl_CreditPartyType cpt on cpt.TypeId=tpi.CrdtPrtyId
