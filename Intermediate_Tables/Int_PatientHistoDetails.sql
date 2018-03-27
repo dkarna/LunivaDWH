@@ -7,10 +7,13 @@
 --drop table DataWareHouse.dbo.Int_PatientHistoDetails
 --truncate table DataWareHouse.dbo.Int_PatientHistoDetails
 
+select * from DataWareHouse.dbo.Int_PatientHistoDetails
+
 create table DataWareHouse.dbo.Int_PatientHistoDetails
 (
 	ID int identity(1,1) primary key
 	,PatId int
+	,PatHistoRecId int
 	,ResultId int
 	,TestTitle varchar(max)
 	,TestParent varchar(max)
@@ -37,8 +40,11 @@ create table DataWareHouse.dbo.Int_PatientHistoDetails
 	,UpdateTs datetime
 )
 
+-- Records of patients having Histo records in HistoReport table (i.e. histo report finished)
+
 insert into DataWareHouse.dbo.Int_PatientHistoDetails   -- case when patients have Historecord
 select record._OrigPatId as PatId
+,record.HistoRecordId as PatHistoRecId
 ,look.Id as ResultId
 ,look.TestTitle
 ,look.TestParent
@@ -75,11 +81,12 @@ order by record.Id
 --where record.HistoRecordId=7849
 --record._OrigPatId=212
 
-
+-- Patients not having records in historeport table (i.e. histo report not finished)
 insert into DataWareHouse.dbo.Int_PatientHistoDetails
 select 
-	p.PatId,
-	look.Id as 'ResultId'
+	p.PatId
+	,p.Id as PatHistoRecId
+	,look.Id as 'ResultId'
 	,look.TestTitle,
 	look.TestParent,
 	look.DefaultResult As 'Result'
@@ -108,6 +115,7 @@ from pat.tbl_PatientHistoRecord p
 	  JOIN tbl_HistoTestType htype on htype.Id=look.HistoId  	  
 	  LEFT JOIN tbl_PatTestCheckedBy chk on chk.Id=p.CheckedBy
 	  JOIN tbl_NrlNumberGenerator gen on gen.UserId=p.PatId
+order by p.Id
 
 	  --select top 1 * from DataWareHouse.dbo.TestMaster
 --select top 1 * from DataWareHouse.dbo.PatientHistoMaster
