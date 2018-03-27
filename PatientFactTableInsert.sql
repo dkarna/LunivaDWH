@@ -1,5 +1,5 @@
 CREATE TABLE DataWareHouse.[dbo].[FactPatientDiagnosis](
-	[ID] [int] IDENTITY(1,1) primary key,
+	[ID] [int] IDENTITY(1,1) NOT NULL,
 	[MemberCode] [varchar](50) NULL,
 	[PatientID] [int] NULL,
 	[MobileNo] [varchar](20) NULL,
@@ -22,36 +22,39 @@ CREATE TABLE DataWareHouse.[dbo].[FactPatientDiagnosis](
 	[SubTestActive] [int] NULL,
 	[SubTestResult] [nvarchar](max) NULL,
 	[Note] [nvarchar](max) NULL,
-	[SubMethod] [nvarchar](max) NULL
+	[SubMethod] [nvarchar](max) NULL,
+PRIMARY KEY CLUSTERED 
+(
+	[ID] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
 ) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
 
-GO
-
-INSERT INTO DataWareHouse..FactPatientDiagnosis
-
-SELECT
-  '' AS MemberCode
-, Rec.Id AS _PatientID
-, Info.ContactNo AS MobileNo
-, bm.ID AS BillID
-, '' AS Doctor
-, '' AS CheckedBy
-, DG.ID /*Diagnosis*/ AS DiagnosisID	-- Shall We keep ID or Name
-, Tst.ID /*Testname*/ AS TestID		-- Shall We keep ID or Name
-, Tst.Method AS Method
-, Rec.TestRange AS Range
-, Rec.TestResult AS Result
-, Bill.billPriceFinal AS Price
-, '' AS Remarks
-, '' AS AttachmentLink
-, getdate() AS CreateTs
-, getdate() AS UpdateTs
-FROM PAT.tbl_PatientTestRecord Rec
-JOIN tbl_Test_DiagnosisGroup tdg ON tdg.Id = Rec.IndividualTestId
-JOIN tbl_DiagnosisGroup DG on tdg.DGId = dg.Id 
-JOIN tbl_NRLTests Tst ON tdg.Id = Tst.Id
-JOIN pat.tbl_PatientInfo info ON Rec.PatId = Info.Id
-JOIN pat.tbl_Bill_Details Bill ON BIll.TestID =  tdg.Id
-JOIN DataWareHouse..BillLoginMaster BM ON BM._PatientID = info.Id
-
-select * from DataWareHouse..FactPatientDiagnosis
+--truncate table DataWareHouse.dbo.FactPatientDiagnosis
+insert into DataWareHouse.dbo.FactPatientDiagnosis
+select --*
+isnull(pm.MemberCode,'') as MemberCode
+,pm.ID as PatientID
+,pm.ContactNo as MobileNo
+,ipbr.BillId as BillID
+,ipbr.SpecialistId as CheckByFirstID
+,isnull(ipbr.SecondSpecialistId,'') as CheckedBySecondID
+,iprd.DiagId as DiagnosisID
+,iprd.TestID
+,iprd.TestMethod as [Method]
+,iprd.TestRange as [Range]
+,iprd.TestResult as [Result]
+,iprd.TestPrice as [Price]
+,'' as Remarks
+,'' as AttachmentLink
+,getdate() as CreateTs
+,getdate() as UpdateTs
+,iprd.SubTest
+,iprd.SubTestRange
+,iprd.SubTestUnits
+,iprd.SubTestActive
+,iprd.SubTestResult
+,iprd.Note
+,iprd.SubMethod
+ from DataWareHouse.dbo.Int_PatientBillReport ipbr
+left join DataWareHouse.dbo.PatientMaster pm on pm.MainPatId=ipbr._OrigPatId
+join DataWareHouse.dbo.Int_PatientReportDetails iprd on iprd.PatId=ipbr.PatId
