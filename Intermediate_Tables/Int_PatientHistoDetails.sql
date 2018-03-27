@@ -42,8 +42,10 @@ create table DataWareHouse.dbo.Int_PatientHistoDetails
 
 -- Records of patients having Histo records in HistoReport table (i.e. histo report finished)
 
-insert into DataWareHouse.dbo.Int_PatientHistoDetails   -- case when patients have Historecord
-select record._OrigPatId as PatId
+insert into DataWareHouse.dbo.Int_PatientHistoDetails
+select * from
+(
+		select record._OrigPatId as PatId
 ,record.HistoRecordId as PatHistoRecId
 ,look.Id as ResultId
 ,look.TestTitle
@@ -67,7 +69,7 @@ select record._OrigPatId as PatId
 ,isnull(record.CheckedByFirstId,'') as CheckedById
 ,isnull(record.CheckedBySecondId,'') as CheckedBySecond
 ,isnull(record.Note,'') as HistoNote
-,1 as IsHistoRecord
+,case when IsFinished=1 then 1 else 0 end as IsHistoRecord
 ,getdate() as CreateTs
 ,getdate() as UpdateTs
 from DataWareHouse.dbo.PatientHistoMaster record
@@ -77,12 +79,9 @@ JOIN tbl_NRLHistoTests test on test.Id=record.HistoTestId
 JOIN tbl_HistoTestType htype on htype.Id=look.HistoId
 JOIN DataWareHouse.dbo.MasterSpecialist chk on chk._SpecialistIdOrig=record.CheckedByFirstId and chk.IsReferrer=0
 JOIN tbl_NrlNumberGenerator gen on gen.UserId=record._OrigPatId
-order by record.Id
---where record.HistoRecordId=7849
---record._OrigPatId=212
-
--- Patients not having records in historeport table (i.e. histo report not finished)
-insert into DataWareHouse.dbo.Int_PatientHistoDetails
+where IsFinished=1
+--order by record.Id
+union
 select 
 	p.PatId
 	,p.Id as PatHistoRecId
@@ -106,7 +105,7 @@ select
 	convert(varchar, getdate(), 101) as 'ResultDate',
 	0 as 'CheckedById', 0 as 'CheckedBySecond'
 	,isnull(nhisto.HistoNote,'') as 'HistoNote'
-	,0 as IsHistoRecord
+	,case when IsFinished=1 then 1 else 0 end as IsHistoRecord
 	,getdate() as CreateTs
 	,getdate() as UpdateTs
 from pat.tbl_PatientHistoRecord p 
@@ -115,7 +114,10 @@ from pat.tbl_PatientHistoRecord p
 	  JOIN tbl_HistoTestType htype on htype.Id=look.HistoId  	  
 	  LEFT JOIN tbl_PatTestCheckedBy chk on chk.Id=p.CheckedBy
 	  JOIN tbl_NrlNumberGenerator gen on gen.UserId=p.PatId
-order by p.Id
+	  where IsFinished=0
+--order by p.Id
+) as t
+order by t.PatHistoRecId
 
 	  --select top 1 * from DataWareHouse.dbo.TestMaster
 --select top 1 * from DataWareHouse.dbo.PatientHistoMaster
