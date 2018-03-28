@@ -9,6 +9,7 @@ create table DataWareHouse.dbo.FactPatientHistoRecords
 	,_OrigPatientID int not null
 	,ResultId int
 	,TestTitle varchar(max)
+	,TestParent varchar(max)
 	,Result varchar(max)
 	,HistoTestId int
 	,HistoTestName varchar(max)
@@ -38,11 +39,12 @@ create table DataWareHouse.dbo.FactPatientHistoRecords
 
 insert into DataWareHouse.dbo.FactPatientHistoRecords
 select iphd.ID as IntPatientId
-,pm.ID as PatientID
 ,iphd.PatHistoRecId as PatHistRecId
+,pm.ID as PatientID
 ,pm.MainPatID as _OrigPatientID
 ,iphd.ResultId
 ,iphd.TestTitle
+,iphd.TestParent
 ,iphd.Result
 ,iphd.HistoTestId
 ,iphd.HistoTestName
