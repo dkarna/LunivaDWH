@@ -30,6 +30,8 @@ create table DataWareHouse.dbo.Int_PatientBillReport -- First intermediate table
         ,
   SecondSpecialistId INT
   ,
+  RequestorId
+  ,
   IsReportTaken char(1) -- y or n
         ,
   IsDone char(1)   -- y or n
@@ -53,12 +55,14 @@ select --top 2
 ,tau.usrFullName as EnteredBy
 ,ms.ID as SpecialistId
 ,ms2.ID as SecondSpecialistId
+,rm.ID as RequestorId
 , CASE WHEN tptr.IstakenByPatient = 1 THEN 'Y' ELSE 'N' END AS IsReportTaken
 , CASE WHEN tptr.IsReportDone=1 THEN 'Y' ELSE 'N' END AS IsDone
 , CASE WHEN tptr.IspartiallyDone=1 THEN 'Y' ELSE 'N' END AS IsPartiallyDone
 , ISNULL(bm.BillTotal,0) AS BillPriceFinal
 from pat.tbl_PatientBill tpb
 join DataWareHouse.dbo.PatientMaster pm on pm.MainPatId=tpb.PatId
+left join DataWareHouse.dbo.RequestorMaster rm on rm.Id=pm.RequestorId
 join DataWareHouse.dbo.BillMaster bm on bm._PatientId=tpb.PatId 
 left join tbl_appUsers tau on tau.usruserid=tpb.UserId
 left join #temppatientrec as tptr on tptr.PatId=tpb.PatId

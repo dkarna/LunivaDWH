@@ -27,6 +27,7 @@ CREATE TABLE [dbo].[PatientMaster](
 	[UpdateTs] [datetime] NULL,
 	[CreditParty] [varchar](100) NULL,
 	[NepaliDate] [nvarchar](15) NULL,
+	[RequestorId] int NULL,
 	[Requestor] [nvarchar](255) NULL,
 	[Age] [nvarchar](20) NULL,
 	[PDate] [datetime] NULL,
@@ -67,8 +68,10 @@ Id AS MainPatID
 ,CAST(getdate() AS DATE) AS UpdateTs
 ,cpt.PartyType as CreditParty
 ,NepaliDate
+,tpi.Id as RequestorId
 ,Requestor
 ,Age
 ,Date as PDate
 FROM pat.tbl_PatientInfo tpi
 left join tbl_CreditPartyType cpt on cpt.TypeId=tpi.CrdtPrtyId
+left join tbl_RequestorInfo ri on ri.Requestor=tpi.Requestor
