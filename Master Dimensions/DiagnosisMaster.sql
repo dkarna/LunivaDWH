@@ -9,7 +9,7 @@ CREATE TABLE DiagnosisMaster
 
 -- Data insert
 
-INSERT INTO DataWareHouse..DiagnosisMaster
+INSERT INTO DataWareHouse.dbo.DiagnosisMaster
 
 SELECT
   diag.Id		AS _DiagnosisIDOrig

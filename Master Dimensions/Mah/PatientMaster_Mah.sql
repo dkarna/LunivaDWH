@@ -1,6 +1,10 @@
--- PatientMaster
+--select top 1 * from pat.tbl_PatientInfo
+--select * FROM pat.tbl_PatientInfo tpi
+--select * from tbl_RequestorInfo where Requestor like '%Ans%'
+--select distinct MemberCode from pat.tbl_PatientInfo
+--select * from tbl_MemberShip
 
-CREATE TABLE [dbo].[PatientMaster](
+CREATE TABLE DataWareHouse.[dbo].[PatientMaster_Mah](
 	[ID] [int] IDENTITY(1,1) NOT NULL,
 	[MainPatID] [int] NULL,
 	[IsMember] [bit] NULL,
@@ -37,7 +41,7 @@ PRIMARY KEY CLUSTERED
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
 ) ON [PRIMARY]
 
--- temporary Requestor table to filter out unwanted data
+-- temporary requestor table to filter out unwanted data
 
 select * into #tempRequestor from
 (
@@ -52,7 +56,7 @@ union
 ) as t
 order by t.Id
 
-INSERT INTO DataWareHouse.dbo.PatientMaster 
+INSERT INTO DataWareHouse.dbo.PatientMaster_Mah 
 --(MainPatID,IsMember,MemberCode,FirstName,MidName,LastName,FullName,Dob,Gender,Address1,Address2,Address3,ContactNo,EmailId,IdentityID,IdentityType,Salutation,ContactNo2,ContactNo3,CrdtPrtyId,IsActive,CreateTs,UpdateTs)
 
 SELECT DISTINCT
@@ -81,7 +85,7 @@ tpi.Id AS MainPatID
 ,1 AS IsActive
 ,CAST(getdate() AS DATE) AS CreateTs
 ,CAST(getdate() AS DATE) AS UpdateTs
-,cpt.PartyType as CreditParty  -- No Credit party available
+,'' as CreditParty  -- No Credit party available
 ,tpi.NepaliDate
 ,case when tpi.Requestor = '' then 0 
    else  ri.Id 
@@ -90,5 +94,7 @@ tpi.Id AS MainPatID
 ,tpi.Age
 ,tpi.[Date] as PDate
 FROM pat.tbl_PatientInfo tpi
-left join tbl_CreditPartyType cpt on cpt.TypeId=tpi.CrdtPrtyId    
+--left join tbl_CreditPartyType cpt on cpt.TypeId=tpi.CrdtPrtyId    -- No Credit party available
 left join #tempRequestor ri on ri.Requestor=tpi.Requestor
+
+
