@@ -2,7 +2,12 @@
   
   -- new
 
-  
+  update pm
+set ReferredDoctorId=tpi.ReferredDoctorId
+--select top 10 *
+from DataWareHouse.dbo.PatientMaster_Mah pm
+join CareLab_Mah_Current.pat.tbl_PatientInfo tpi
+on tpi.Id = pm.MainPatID
   
 
 
